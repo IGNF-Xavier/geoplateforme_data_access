@@ -116,9 +116,11 @@ function renderDatasetCard(s: AppState, d: Dataset): string {
   const previewMsg =
     s.preview.status === 'loading'
       ? loadingHtml('Chargement de l’aperçu…')
-      : s.preview.status === 'error' || s.preview.status === 'empty'
-        ? alertHtml(s.preview.status === 'error' ? 'warning' : 'info', s.preview.status === 'error' ? 'Aperçu indisponible' : 'Pas d’aperçu', s.preview.message)
-        : ''
+      : s.preview.status === 'empty'
+        ? `<p class="da-note">Pas d’aperçu sur la carte : ${esc((s.preview.message ?? '').replace(/^Aucun service d’affichage ouvert pour cette donnée : pas d’aperçu sur la carte\.?$/, 'aucun service d’affichage ouvert.'))}</p>`
+        : s.preview.status === 'error'
+          ? alertHtml('warning', 'Aperçu indisponible', s.preview.message)
+          : ''
   const layerSelect =
     layers.length > 1
       ? `<details class="da-details"><summary>Couche affichée sur la carte : ${esc(s.layer ?? '')}</summary><div class="fr-select-group"><label class="fr-label" for="da-layer">Changer de couche (${layers.length} disponibles)</label>
@@ -221,8 +223,8 @@ function needsHtml(title: string, open: boolean): string {
 export function renderDataset(s: AppState): string {
   const d = s.dataset!
   return `<button type="button" class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-arrow-left-line fr-btn--icon-left" data-act="back">Retour aux résultats</button>
-    ${renderDatasetCard(s, d)}
-    ${renderTabs(s)}
+    <section class="da-block" aria-labelledby="da-dataset-title"><p class="da-block-label">Donnée</p>${renderDatasetCard(s, d)}</section>
+    <section class="da-block" aria-labelledby="da-get-h"><h3 id="da-get-h" class="da-block-label">Récupérer</h3>${renderTabs(s)}</section>
     ${renderZoneBox(s)}`
 }
 
@@ -285,7 +287,7 @@ export function renderZoneBox(s: AppState): string {
   const a = s.area
   const open = s.zoneOpen || !!s.drawing
   if (!a && !open) {
-    return `<section class="da-zonebox" aria-labelledby="da-zone-h"><h3 id="da-zone-h" class="fr-h6">Ma zone <span class="da-opt">(facultatif)</span></h3>
+    return `<section class="da-block da-zonebox" aria-labelledby="da-zone-h"><h3 id="da-zone-h" class="da-block-label">Zone <span class="da-opt">(facultatif)</span></h3>
       <p class="fr-text--sm">Utile pour vérifier qu’un service couvre votre secteur, ou pour télécharger / extraire seulement ce qui vous concerne.</p>
       <button type="button" class="fr-btn fr-btn--secondary fr-btn--sm" data-act="open-zone">Définir une zone</button></section>`
   }
@@ -306,7 +308,7 @@ export function renderZoneBox(s: AppState): string {
         <div class="da-nav-right"><button type="button" class="fr-btn fr-btn--tertiary fr-btn--sm" data-act="${open ? 'close-zone' : 'open-zone'}">${open ? 'Masquer les outils' : 'Modifier la zone'}</button>
         <button type="button" class="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-delete-line fr-btn--icon-left" data-act="clear-area">Supprimer la zone</button></div></div>`
     : ''
-  return `<section class="da-zonebox" aria-labelledby="da-zone-h"><h3 id="da-zone-h" class="fr-h6">Ma zone <span class="da-opt">(facultatif)</span></h3>
+  return `<section class="da-block da-zonebox" aria-labelledby="da-zone-h"><h3 id="da-zone-h" class="da-block-label">Zone <span class="da-opt">(facultatif)</span></h3>
     ${a && !open ? '' : zoneTools(s)}
     ${summary}
     ${!a ? '<div class="da-nav"><button type="button" class="fr-btn fr-btn--tertiary fr-btn--sm" data-act="close-zone">Fermer</button></div>' : ''}
