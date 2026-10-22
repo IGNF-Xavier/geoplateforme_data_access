@@ -10,6 +10,7 @@
  */
 import type { BBox, Contact, Dataset, DownloadResourceRef, ServiceAccess, ServiceKind } from '../types'
 import { analyze, type Analysis } from '../search/analyze'
+import { plainText } from '../utils/markdown'
 import { fetchJson, type RequestOptions } from './http'
 
 export const CATALOGUE_URL = 'https://data.geopf.fr/catalog/search/records/_search?bucket=bucket'
@@ -113,7 +114,7 @@ export function parseContacts(source: CatalogueSource): Contact[] {
   const contacts: Contact[] = []
   for (const c of source.contactForResource ?? []) {
     const contact: Contact = {
-      organisation: text(c.organisationObject) || undefined,
+      organisation: plainText(text(c.organisationObject)) || undefined,
       email: cleanEmail(c.email),
       website: c.website && isHttpUrl(c.website) ? c.website : undefined,
       role: c.role || undefined,
@@ -202,13 +203,13 @@ export function parseRecord(source: CatalogueSource): Dataset {
   return {
     id: source.uuid,
     source: 'catalogue',
-    title: text(source.resourceTitleObject) ?? source.uuid,
+    title: plainText(text(source.resourceTitleObject)) || source.uuid,
     abstract: text(source.resourceAbstractObject),
-    producer: text(source.OrgForResourceObject),
+    producer: plainText(text(source.OrgForResourceObject)) || undefined,
     type: source.resourceType?.[0] ? (TYPE_LABELS[source.resourceType[0]] ?? source.resourceType[0]) : undefined,
     updatedAt: source.changeDate,
     edition: source.resourceEdition,
-    license: text(source.licenseObject?.[0]),
+    license: plainText(text(source.licenseObject?.[0])) || undefined,
     resolutions: source.resolutionScaleDenominator?.map((r) => `1 : ${Number(r).toLocaleString('fr-FR')}`),
     temporalExtent: temporal ? { start: temporal.start?.date, end: temporal.end?.date } : undefined,
     extents,

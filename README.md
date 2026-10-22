@@ -35,7 +35,7 @@ Lien direct vers une donnée du catalogue : `http://localhost:5173/?donnee=IGNF_
 
 ```bash
 npm run lint         # vérification de types
-npm test             # 156 tests unitaires (recherche, sémantique, contacts, géographie, SIG, extraction, authentification), sans réseau
+npm test             # 165 tests unitaires (recherche, sémantique, contacts, Markdown, géographie, SIG, extraction, authentification), sans réseau
 npm run test:live    # vérifie sur le VRAI catalogue que chaque produit/thème du thésaurus existe encore
 npm run test:e2e     # 11 scénarios Playwright sur les VRAIES APIs (réseau + Chrome installé)
 

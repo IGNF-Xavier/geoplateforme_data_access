@@ -7,6 +7,8 @@ import { fieldEnum, fieldType, isFailed, isRunning, isSuccessful } from '../extr
 import { editableFields } from '../extraction/builder'
 import { defaultLayer, groupByLayer, restrictedServices } from '../gis/capabilities'
 import { gisIntegration } from '../gis/GISIntegrationService'
+import { clip, shortProducer } from '../utils/format'
+import { renderMarkdown, stripMarkdown } from '../utils/markdown'
 import { SEMANTIC_DOWNLOAD_MB } from '../search/semantic'
 import { CONCEPTS } from '../search/thesaurus'
 import type { AppState } from '../state/store'
@@ -43,10 +45,10 @@ export function renderContacts(d: Dataset): string {
   const rows = contacts
     .map((c) => {
       const mail = mailtoLink(c.email, subject)
-      return `<li><strong>${esc(c.organisation ?? 'Producteur')}</strong>${c.role ? ` <span class="fr-hint-text">(${esc(c.role)})</span>` : ''}
-        ${mail ? `<br><a href="${esc(mail)}">${esc(c.email)}</a> <button type="button" class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" data-act="copy-email" data-email="${esc(c.email)}">Copier l’adresse</button>` : ''}
-        ${c.website ? `<br><a href="${esc(c.website)}" target="_blank" rel="noopener">Site du producteur<span class="fr-sr-only"> (nouvelle fenêtre)</span></a>` : ''}
-        ${c.address ? `<br><span class="fr-text--sm">${esc(c.address)}</span>` : ''}</li>`
+      const name = shortProducer(c.organisation) ?? 'Producteur'
+      return `<li><strong>${esc(name)}</strong>
+        ${mail ? ` · <a href="${esc(mail)}">${esc(c.email)}</a> <button type="button" class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" data-act="copy-email" data-email="${esc(c.email)}">Copier</button>` : ''}
+        ${c.website ? ` · <a href="${esc(c.website)}" target="_blank" rel="noopener">Site<span class="fr-sr-only"> du producteur (nouvelle fenêtre)</span></a>` : ''}</li>`
     })
     .join('')
   const hasMail = contacts.some((c) => cleanEmail(c.email))
@@ -55,8 +57,8 @@ export function renderContacts(d: Dataset): string {
     : hasMail
       ? ''
       : 'Aucune adresse courriel n’est renseignée dans les métadonnées de cette donnée.'
-  return `<section class="da-contact" id="da-contact" aria-labelledby="da-contact-h"><h4 id="da-contact-h" class="fr-h6">Contacter le producteur</h4>
-    ${rows ? `<ul class="da-contact-list">${rows}</ul>` : ''}${missing ? `<p class="fr-text--sm">${esc(missing)}</p>` : ''}</section>`
+  return `<section class="da-contact" id="da-contact" aria-labelledby="da-contact-h"><h3 id="da-contact-h" class="da-contact-title">Contacter le producteur</h3>
+    ${rows ? `<ul class="da-contact-list">${rows}</ul>` : ''}${missing ? `<p class="da-help">${esc(missing)}</p>` : ''}</section>`
 }
 
 function restrictedNotice(d: Dataset): string {
@@ -119,19 +121,22 @@ function renderDatasetCard(s: AppState, d: Dataset): string {
         : ''
   const layerSelect =
     layers.length > 1
-      ? `<div class="fr-select-group"><label class="fr-label" for="da-layer">Couche affichée sur la carte</label>
-          <select class="fr-select" id="da-layer">${layers.map((l) => `<option value="${esc(l.layer)}"${l.layer === s.layer ? ' selected' : ''}>${esc(l.layer)}</option>`).join('')}</select></div>`
+      ? `<details class="da-details"><summary>Couche affichée sur la carte : ${esc(s.layer ?? '')}</summary><div class="fr-select-group"><label class="fr-label" for="da-layer">Changer de couche (${layers.length} disponibles)</label>
+          <select class="fr-select" id="da-layer">${layers.map((l) => `<option value="${esc(l.layer)}"${l.layer === s.layer ? ' selected' : ''}>${esc(l.layer)}</option>`).join('')}</select></div></details>`
       : ''
+  const meta = [shortProducer(d.producer), d.type].filter(Boolean).join(' · ')
+  const longAbstract = !!d.abstract && stripMarkdown(d.abstract).length > 150
   return `<div class="da-dataset-card">
-      <h3 class="fr-h6" id="da-dataset-title" tabindex="-1">${esc(d.title)}</h3>
+      <h2 class="da-dataset-title" id="da-dataset-title" tabindex="-1">${esc(d.title)}</h2>
+      ${meta ? `<p class="da-dataset-meta">${esc(meta)}</p>` : ''}
       <p class="da-badges" aria-label="Modes d’accès">${datasetBadges(d)}</p>
       ${restrictedNotice(d)}
+      ${d.abstract ? `<p class="da-lead">${esc(clip(stripMarkdown(d.abstract), 150))}</p>` : ''}
       ${renderContacts(d)}
-      ${d.abstract ? `<p class="da-lead">${esc(d.abstract.length > 170 ? `${d.abstract.slice(0, 170).trim()}…` : d.abstract)}</p>` : ''}
-      <details class="da-details"><summary>Toutes les informations</summary>${d.abstract && d.abstract.length > 170 ? `<p class="da-abstract">${esc(d.abstract)}</p>` : ''}<dl class="da-facts">${datasetFacts(d)}</dl></details>
-      ${layerSelect}
+      <details class="da-details"><summary>Toutes les informations</summary>${longAbstract ? `<div class="da-abstract">${renderMarkdown(d.abstract)}</div>` : ''}<dl class="da-facts">${datasetFacts(d)}</dl></details>
       <div aria-live="polite">${previewMsg}</div>
-    </div>`
+    </div>
+    ${layerSelect}`
 }
 
 export function renderSearch(s: AppState): string {
@@ -144,71 +149,69 @@ export function renderSearch(s: AppState): string {
   let status = ''
   if (search.status === 'loading') status = loadingHtml('Recherche en cours…')
   else if (search.status === 'error') status = alertHtml('error', 'La recherche a échoué', search.message)
-  else if (search.status === 'empty') status = alertHtml('info', 'Aucun résultat', search.message) + needsHtml('Essayez plutôt un besoin', true)
+  else if (search.status === 'empty') status = alertHtml('info', 'Aucun résultat', search.message)
   else if (search.status === 'ready' && search.data) {
     const { catalogueTotal, indexCount, failures } = search.data
+    const need = analysis?.concepts.length ? ` · besoin reconnu : <strong>${analysis.concepts.map((c) => esc(c.label)).join(', ')}</strong>` : ''
     status =
-      (analysis?.concepts.length
-        ? `<p class="da-understood" role="status">Besoin reconnu : ${analysis.concepts.map((c) => `<strong>${esc(c.label)}</strong>`).join(', ')} — les données les plus adaptées sont en tête.</p>`
-        : '') +
-      `<p class="fr-hint-text" role="status">${list.length} donnée${list.length > 1 ? 's' : ''} affichée${list.length > 1 ? 's' : ''}` +
-      `${catalogueTotal ? ` · ${catalogueTotal.toLocaleString('fr-FR')} fiche${catalogueTotal > 1 ? 's' : ''} au catalogue` : ''}` +
-      `${indexCount ? ` · ${indexCount} couche${indexCount > 1 ? 's' : ''} de l’index de recherche` : ''}.</p>` +
+      `<p class="da-status" role="status"><strong>${list.length} donnée${list.length > 1 ? 's' : ''}</strong>${need}
+        <span class="da-status-detail">${catalogueTotal ? `${catalogueTotal.toLocaleString('fr-FR')} fiche${catalogueTotal > 1 ? 's' : ''} au catalogue` : ''}${catalogueTotal && indexCount ? ' · ' : ''}${indexCount ? `${indexCount} couche${indexCount > 1 ? 's' : ''} de l’index` : ''}</span></p>` +
       failures.map((m) => alertHtml('warning', 'Résultats partiels', m)).join('')
     if (!list.length) status += alertHtml('info', 'Aucun résultat avec ces filtres', 'Désactivez un filtre pour élargir la liste.')
   }
   const items =
     search.status === 'ready'
       ? list
-          .map(
-            (d) => `<li><button type="button" class="da-result${s.dataset?.id === d.id ? ' is-selected' : ''}" data-act="pick" data-id="${esc(d.id)}">
+          .map((d) => {
+            const meta = [shortProducer(d.producer), d.type].filter(Boolean).join(' · ')
+            return `<li><button type="button" class="da-result${s.dataset?.id === d.id ? ' is-selected' : ''}" data-act="pick" data-id="${esc(d.id)}">
               <span class="da-result-title">${esc(d.title)}</span>
-              <span class="da-result-meta">${esc([d.producer, d.type].filter(Boolean).join(' · '))}</span>
+              ${meta ? `<span class="da-result-meta">${esc(meta)}</span>` : ''}
               ${d.matchReason ? `<span class="da-result-why">${esc(d.matchReason)}</span>` : ''}
-              <span class="da-badges">${datasetBadges(d)}</span></button></li>`,
-          )
+              <span class="da-badges">${datasetBadges(d)}</span></button></li>`
+          })
           .join('')
       : ''
   return `<form role="search" id="da-search-form" class="da-search" autocomplete="off">
-      <label class="fr-label" for="da-search-input">Que cherchez-vous ?
-        <span class="fr-hint-text">Décrivez en quelques mots ce que vous voulez (« bâtiments », « altitude », « photos aériennes »…) ou saisissez le nom d’un produit.</span></label>
+      <label class="da-search-label" for="da-search-input">Que cherchez-vous ?</label>
       <div class="fr-search-bar">
-        <input class="fr-input" type="search" id="da-search-input" name="q" value="${esc(s.query)}" placeholder="Ex. : forêts, routes, risque d’inondation, BD TOPO…" aria-describedby="da-search-status" />
+        <input class="fr-input" type="search" id="da-search-input" name="q" value="${esc(s.query)}" placeholder="Ex. : bâtiments, altitude, photos aériennes, BD TOPO" aria-describedby="da-search-status" />
         <button class="fr-btn" type="submit">Rechercher</button>
       </div>
-      <div class="da-filters" role="group" aria-label="Filtrer les résultats">${chip('downloadable', 'Téléchargeable')}${chip('gis', 'Utilisable en SIG')}${chip('openOnly', 'Accès libre')}</div>
+      <div class="da-filters" role="group" aria-label="Filtrer les résultats"><span class="da-filters-label">Filtrer :</span>${chip('downloadable', 'Téléchargeable')}${chip('gis', 'Utilisable en SIG')}${chip('openOnly', 'Accès libre')}</div>
     </form>
-    ${renderSemanticBox(s)}
     ${needsHtml('Ou partez d’un besoin', s.needsOpen)}
     <div id="da-search-status" aria-live="polite">${status}</div>
-    <ul class="da-results" aria-label="Résultats de recherche">${items}</ul>`
+    <ul class="da-results" aria-label="Résultats de recherche">${items}</ul>
+    ${renderSemanticBox(s)}`
 }
 
-/** Activation de la recherche intelligente (modèle exécuté dans le navigateur, téléchargé une fois). */
+/** Recherche intelligente : une ligne discrète (modèle exécuté dans le navigateur, téléchargé une fois). */
 function renderSemanticBox(s: AppState): string {
   const m = s.semantic
+  const info = `Comprend les formulations libres (« photos prises d’avion ») en plus des mots-clés. Calculée dans votre navigateur : vos saisies ne sont envoyées à aucun service externe. Téléchargement unique d’environ ${SEMANTIC_DOWNLOAD_MB} Mo.`
   if (!m.enabled || m.status === 'off') {
-    return `<div class="da-semantic"><p class="da-semantic-title"><strong>Recherche intelligente</strong> <span class="fr-badge fr-badge--sm">facultative</span></p>
-      <p class="fr-text--sm">Comprend les formulations libres (« photos prises d’avion », « stations de recharge ») en plus des mots-clés. Calculée dans votre navigateur : vos saisies ne sont envoyées à aucun service externe. Téléchargement unique d’environ ${SEMANTIC_DOWNLOAD_MB} Mo.</p>
-      <button type="button" class="fr-btn fr-btn--secondary fr-btn--sm" data-act="semantic-on">Activer la recherche intelligente</button></div>`
+    return `<div class="da-semantic"><div class="da-semantic-row"><span><strong>Recherche intelligente</strong> <span class="da-muted">facultative</span></span>
+      <button type="button" class="fr-btn fr-btn--secondary fr-btn--sm" data-act="semantic-on">Activer</button></div>
+      <p class="da-semantic-info">${esc(info)}</p></div>`
   }
   if (m.status === 'loading') {
-    return `<div class="da-semantic" role="status"><p class="da-semantic-title"><strong>Recherche intelligente</strong> — ${esc(m.progress.label || 'chargement')}…</p>
+    return `<div class="da-semantic" role="status"><div class="da-semantic-row"><span><strong>Recherche intelligente</strong> <span class="da-muted">${esc(m.progress.label || 'chargement')}…</span></span></div>
       <progress max="100" value="${m.progress.percent}" aria-label="Chargement du modèle">${m.progress.percent} %</progress>
-      <p class="fr-hint-text">La recherche par mots-clés reste utilisable pendant ce temps.</p></div>`
+      <p class="da-semantic-info">La recherche par mots-clés reste utilisable pendant ce temps.</p></div>`
   }
   if (m.status === 'error') {
     return `<div class="da-semantic">${alertHtml('warning', 'Recherche intelligente indisponible', `${m.error ?? 'Erreur inconnue'} La recherche par mots-clés continue de fonctionner.`)}
       <button type="button" class="fr-btn fr-btn--tertiary fr-btn--sm" data-act="semantic-on">Réessayer</button></div>`
   }
-  const gain = m.added + m.boosted > 0 ? ` — ${m.boosted} résultat${m.boosted > 1 ? 's' : ''} remonté${m.boosted > 1 ? 's' : ''}, ${m.added} ajouté${m.added > 1 ? 's' : ''} pour cette recherche` : ''
-  return `<div class="da-semantic is-on"><p class="fr-text--sm"><span class="fr-badge fr-badge--sm fr-badge--success">Recherche intelligente activée</span>${esc(gain)}
-    <button type="button" class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" data-act="semantic-off">Désactiver</button></p></div>`
+  const gain = m.added + m.boosted > 0 ? ` · ${m.boosted} remonté${m.boosted > 1 ? 's' : ''}, ${m.added} ajouté${m.added > 1 ? 's' : ''}` : ''
+  return `<div class="da-semantic is-on"><div class="da-semantic-row"><span><span class="da-dot" aria-hidden="true"></span><strong>Recherche intelligente activée</strong><span class="da-muted">${esc(gain)}</span></span>
+    <button type="button" class="fr-btn fr-btn--tertiary-no-outline fr-btn--sm" data-act="semantic-off">Désactiver</button></div></div>`
 }
 
-/** Suggestions de recherche : les besoins du thésaurus. */
+/** Bandeau dépliable des besoins du thésaurus. */
 function needsHtml(title: string, open: boolean): string {
-  return `<details class="da-needs"${open ? ' open' : ''}><summary>${esc(title)} <span class="da-needs-count">${CONCEPTS.length} besoins</span></summary>
+  return `<details class="da-needs"${open ? ' open' : ''}><summary><span>${esc(title)}</span> <span class="da-needs-count">${CONCEPTS.length}</span></summary>
     <div class="da-needs-grid">${CONCEPTS.map(
       (c) => `<button type="button" class="da-need" data-act="need" data-id="${esc(c.id)}"><strong>${esc(c.label)}</strong><small>${esc(c.hint)}</small></button>`,
     ).join('')}</div></details>`
@@ -383,7 +386,7 @@ function renderTabGis(s: AppState): string {
   const d = s.dataset!
   const o = gisIntegration.getOptions({ resource: d, availableServices: d.services, selectedArea: s.area, selectedLayer: s.layer })
   if (!o.clients.length) {
-    return restrictedNotice(d) || alertHtml('warning', 'Aucun accès exploitable', 'Cette donnée n’a pas de service WMS, WMTS ou WFS ouvert.')
+    return restrictedNotice(d) || alertHtml('warning', 'Aucun accès exploitable', 'Cette donnée n’a pas de service WMS, WMTS, WFS ou TMS ouvert.')
   }
   const la = o.layers.find((l) => l.layer === o.selectedLayer)
   const r = s.gis.result
@@ -392,20 +395,27 @@ function renderTabGis(s: AppState): string {
       ? loadingHtml(r.title)
       : alertHtml(r.kind, r.title, r.text) + (r.code ? `<pre class="da-code" tabindex="0">${esc(r.code)}</pre>` : '')
     : ''
-  return `${s.area ? renderCoverage(s) : '<p class="fr-hint-text">Aucune zone nécessaire pour utiliser un géoservice. Définissez-en une plus bas pour vérifier qu’il couvre votre secteur.</p>'}
-    ${la ? `<p class="fr-text--sm">Mode choisi automatiquement : <strong>${la.recommended.kind}</strong>. ${esc(la.reason)}</p>` : ''}
-    ${o.layers.length > 1 ? `<details class="da-details"${o.layers.length < 6 ? ' open' : ''}><summary>Choisir une autre couche (${o.layers.length} disponibles)</summary>
-      <div class="fr-select-group"><label class="fr-label" for="da-gis-layer">Couche à utiliser</label>
-      <select class="fr-select" id="da-gis-layer">${o.layers.map((l) => `<option value="${esc(l.layer)}"${l.layer === o.selectedLayer ? ' selected' : ''}>${esc(l.layer)}</option>`).join('')}</select></div></details>` : ''}
-    ${o.clients
-      .map(
-        (c) => `<section class="da-client" aria-label="${esc(c.label)}"><h4 class="fr-h6">${esc(c.label)}</h4>
-          <ul class="da-actions-list">${c.actions.map((a) => `<li><button type="button" class="fr-btn fr-btn--secondary fr-btn--sm" data-act="gis-run" data-gis="${esc(c.id)}:${esc(a.id)}">${esc(a.label)}</button><span class="fr-hint-text">${esc(a.description)}</span></li>`).join('')}</ul>
-          <details class="da-details"><summary>Comment l’utiliser ?</summary><ol>${c.instructions.map((i) => `<li>${esc(i)}</li>`).join('')}</ol></details></section>`,
-      )
-      .join('')}
+  const qgis = o.clients.find((c) => c.id === 'qgis')
+  const generic = o.clients.find((c) => c.id === 'generic')
+  const run = (clientId: string, a: { id: string; label: string }, cls: string) =>
+    `<button type="button" class="fr-btn ${cls}" data-act="gis-run" data-gis="${esc(clientId)}:${esc(a.id)}">${esc(a.label)}</button>`
+  const qlr = qgis?.actions.find((a) => a.id === 'qgis-qlr')
+  const uri = qgis?.actions.find((a) => a.id === 'qgis-uri')
+  const instructions = o.clients.flatMap((c) => c.instructions.map((i) => `<li><strong>${esc(c.label)}</strong> — ${esc(i)}</li>`)).join('')
+  return `<p class="da-lead">Cette donnée s’utilise directement dans un logiciel SIG, <strong>sans définir de zone</strong>.</p>
+    ${s.area ? renderCoverage(s) : ''}
+    ${qgis ? `<section class="da-client" aria-label="QGIS"><h3 class="da-h3">QGIS</h3>
+      <div class="da-actions">${qlr ? run('qgis', qlr, '') : ''}${uri ? run('qgis', uri, 'fr-btn--secondary') : ''}</div>
+      <p class="da-help">Le fichier .qlr s’ouvre par double-clic ou par glisser-déposer dans QGIS : aucun plugin n’est nécessaire.</p></section>` : ''}
+    ${generic?.actions.length ? `<section class="da-client" aria-label="Autre logiciel"><h3 class="da-h3">Autre logiciel (ArcGIS, MapInfo, gvSIG…)</h3>
+      <div class="da-actions">${generic.actions.map((a) => run('generic', a, 'fr-btn--secondary')).join('')}</div></section>` : ''}
     <div aria-live="polite">${result}</div>
-    <p class="fr-text--sm">QGIS n’offre pas de lien d’ouverture automatique depuis un navigateur : le fichier téléchargé s’ouvre d’un double-clic ou par glisser-déposer.</p>`
+    <details class="da-details"><summary>Options avancées et aide</summary>
+      ${la ? `<p class="da-help">Mode utilisé : <strong>${la.recommended.kind}</strong>. ${esc(la.reason)}</p>` : ''}
+      ${o.layers.length > 1 ? `<div class="fr-select-group"><label class="fr-label" for="da-gis-layer">Couche à utiliser (${o.layers.length} disponibles)</label>
+        <select class="fr-select" id="da-gis-layer">${o.layers.map((l) => `<option value="${esc(l.layer)}"${l.layer === o.selectedLayer ? ' selected' : ''}>${esc(l.layer)}</option>`).join('')}</select></div>` : ''}
+      <ul class="da-steps-help">${instructions}</ul>
+      <p class="da-help">QGIS n’offre pas de lien d’ouverture automatique depuis un navigateur.</p></details>`
 }
 
 function renderTabExtract(s: AppState): string {
@@ -496,7 +506,7 @@ export function renderTabs(s: AppState): string {
     extract: () => renderTabExtract(s),
   }
   return `<div class="da-tabs" role="tablist" aria-label="Mode de récupération">
-      ${tabButton(s, 'gis', 'Utiliser dans un SIG', noGis)}${tabButton(s, 'download', 'Télécharger', noDownload)}${tabButton(s, 'extract', 'Extraire')}
+      ${tabButton(s, 'gis', 'Utiliser en SIG', noGis)}${tabButton(s, 'download', 'Télécharger', noDownload)}${tabButton(s, 'extract', 'Extraire')}
     </div>
     <div role="tabpanel" id="da-panel-${s.tab}" aria-labelledby="da-tab-${s.tab}" tabindex="0" class="da-tabpanel">${panels[s.tab]()}</div>`
 }

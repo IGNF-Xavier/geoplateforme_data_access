@@ -13,7 +13,7 @@ async function pickBdTopo(page: Page) {
   // Attendre que la liste soit celle de la recherche (la saisie déclenche une recherche différée).
   await expect(page.locator('.da-result').first()).toContainText('BD TOPO', { timeout: 30_000 })
   await page.getByRole('button', { name: /^BD TOPO®/ }).first().click()
-  await expect(page.getByRole('heading', { name: 'BD TOPO®', level: 3 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'BD TOPO®', level: 2 })).toBeVisible()
 }
 
 async function defineZoneFromCommune(page: Page, commune: string) {
@@ -25,7 +25,7 @@ async function defineZoneFromCommune(page: Page, commune: string) {
 
 test('recherche par besoin : « bâtiments » propose la BD TOPO sans en connaître le nom', async ({ page }) => {
   await search(page, 'bâtiments')
-  await expect(page.locator('.da-understood')).toContainText('Bâtiments', { timeout: 30_000 })
+  await expect(page.locator('.da-status')).toContainText('Bâtiments', { timeout: 30_000 })
   const first = page.locator('.da-result').first()
   await expect(first).toContainText('BD TOPO')
   await expect(first.locator('.da-result-why')).toContainText('Bâtiments')
@@ -36,15 +36,16 @@ test('recherche par besoin : puces de suggestion et fautes de frappe', async ({ 
   await page.getByRole('button', { name: /Photos aériennes/ }).click()
   await expect(page.locator('.da-result').first()).toContainText(/ORTHO/i, { timeout: 30_000 })
   await page.getByLabel(/Que cherchez-vous/).fill('batiements')
-  await expect(page.locator('.da-understood')).toContainText('Bâtiments', { timeout: 30_000 })
+  await expect(page.locator('.da-status')).toContainText('Bâtiments', { timeout: 30_000 })
 })
 
 test('géoservices : utilisables SANS aucune zone (fichier QGIS natif)', async ({ page }) => {
   await pickBdTopo(page)
   // L'onglet SIG est ouvert d'emblée, et la zone est présentée comme facultative.
   const panel = page.getByRole('tabpanel')
-  await expect(panel).toContainText('Mode choisi automatiquement : WMTS')
-  await expect(panel).toContainText('Aucune zone nécessaire')
+  await panel.getByText('Options avancées et aide').click()
+  await expect(panel).toContainText('Mode utilisé : WMTS')
+  await expect(panel).toContainText('sans définir de zone')
   await expect(page.getByText('(facultatif)')).toBeVisible()
 
   const [download] = await Promise.all([
@@ -95,7 +96,7 @@ test('zone facultative : télécharger les fichiers du territoire', async ({ pag
 test('index de recherche : donnée absente du catalogue (Patrinat / MNHN)', async ({ page }) => {
   await search(page, 'espèces protégées')
   // La saisie déclenche une recherche différée : attendre sa fin avant de cliquer (la liste se redessine).
-  await expect(page.getByText(/couches? de l’index de recherche/)).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText(/couches? de l’index/)).toBeVisible({ timeout: 30_000 })
   const result = page.getByRole('button', { name: /Patrinat/ }).first()
   await expect(result).toBeVisible({ timeout: 30_000 })
   await result.click()
@@ -136,7 +137,7 @@ test('contact du producteur : adresse courriel publiée dans les métadonnées',
   const contact = page.getByRole('region', { name: 'Contacter le producteur' })
   await expect(contact).toBeVisible()
   await expect(contact.getByRole('link', { name: /@/ }).first()).toHaveAttribute('href', /^mailto:[^?]+@[^?]+\?subject=/)
-  await expect(contact.getByRole('button', { name: 'Copier l’adresse' }).first()).toBeVisible()
+  await expect(contact.getByRole('button', { name: 'Copier', exact: true }).first()).toBeVisible()
 })
 
 test('donnée à accès restreint : le contact du producteur est proposé pour demander l’accès', async ({ page }) => {
@@ -154,7 +155,7 @@ test('recherche intelligente : activation locale du modèle puis recherche', asy
   test.setTimeout(240_000)
   await page.goto('/')
   await expect(page.getByText(/aucun service externe/)).toBeVisible()
-  await page.getByRole('button', { name: 'Activer la recherche intelligente' }).click()
+  await page.getByRole('button', { name: 'Activer', exact: true }).click()
   await expect(page.getByText('Recherche intelligente activée')).toBeVisible({ timeout: 200_000 })
   await page.getByLabel(/Que cherchez-vous/).fill('photos prises d’avion')
   await expect(page.locator('.da-result').first()).toContainText(/ORTHO|aérienne/i, { timeout: 30_000 })

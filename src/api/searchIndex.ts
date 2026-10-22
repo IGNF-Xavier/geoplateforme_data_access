@@ -12,6 +12,7 @@
  */
 import type { BBox, Dataset, ServiceAccess, ServiceKind } from '../types'
 import { analyze, fold, type Analysis } from '../search/analyze'
+import { plainText } from '../utils/markdown'
 import { fetchJson, type RequestOptions } from './http'
 import { cleanEmail, stripQuery } from './catalogue'
 
@@ -82,9 +83,9 @@ export function groupDocuments(documents: IndexDocument[]): Dataset[] {
       {
         id: `index:${layer}`,
         source: 'index' as const,
-        title: first.title || layer,
+        title: plainText(first.title) || layer,
         abstract: first.description,
-        producer: first.producers?.[0] ?? first.attribution?.title,
+        producer: plainText(first.producers?.[0] ?? first.attribution?.title) || undefined,
         type: 'Couche publiée',
         updatedAt: first.publication_date,
         license: first.licence,

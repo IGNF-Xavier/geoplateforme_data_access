@@ -1,0 +1,894 @@
+/* ==========================================================================
+   Accès aux données géographiques — styles de l'application
+   S'appuie sur les variables du DSFR ; échelle typographique unique ci-dessous :
+     corps 1rem · secondaire 0,875rem · étiquettes 0,8125rem · jamais en dessous.
+   ========================================================================== */
+
+:root {
+  --da-panel-width: clamp(26rem, 31vw, 36rem);
+  --da-text-sm: 0.875rem;
+  --da-text-xs: 0.8125rem;
+  --da-gap: 1rem;
+  --da-radius: 0.25rem;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.da-muted {
+  color: var(--text-mention-grey);
+  font-weight: 400;
+}
+
+/* ------------------------------------------------------------ bandeau + en-tête */
+.da-notice {
+  margin: 0;
+  padding: 0.3rem 1rem;
+  background: var(--background-alt-blue-france);
+  color: var(--text-default-grey);
+  font-size: var(--da-text-sm);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.da-notice strong {
+  color: var(--text-action-high-blue-france);
+}
+
+.da-header {
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.da-header .fr-header__body {
+  box-shadow: none;
+}
+
+.da-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.da-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-title-grey);
+}
+
+.da-tagline {
+  margin: 0;
+  font-size: var(--da-text-sm);
+  line-height: 1.4;
+  color: var(--text-mention-grey);
+}
+
+/* ------------------------------------------------------------ disposition */
+.da-layout {
+  display: grid;
+  grid-template-columns: var(--da-panel-width) minmax(0, 1fr);
+  flex: 1 1 0;
+  min-height: 0;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.da-panel-collapsed .da-layout {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.da-panel-collapsed .da-panel {
+  visibility: hidden;
+  padding: 0;
+  border: 0;
+}
+
+.da-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 1.25rem 2rem;
+  border-right: 1px solid var(--border-default-grey);
+  background: var(--background-default-grey);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Les petits textes DSFR descendent à 12 px : on les relève dans le panneau. */
+.da-panel .fr-hint-text,
+.da-panel .fr-text--sm,
+.da-panel .fr-error-text {
+  font-size: var(--da-text-sm);
+  line-height: 1.45;
+}
+
+.da-panel .fr-label {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.da-panel .fr-btn--sm {
+  font-size: var(--da-text-sm);
+  line-height: 1.25rem;
+  min-height: 2rem;
+}
+
+.da-panel .fr-badge {
+  font-size: var(--da-text-xs);
+  line-height: 1.25;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+}
+
+.da-panel p {
+  margin: 0 0 0.5rem;
+}
+
+.da-map-wrap {
+  position: relative;
+  min-height: 20rem;
+}
+
+.da-map {
+  position: absolute;
+  inset: 0;
+}
+
+.da-toggle {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 2.2rem;
+  z-index: 5;
+}
+
+.da-map-status {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.4rem;
+  z-index: 5;
+  margin: 0;
+  padding: 0.15rem 0.5rem;
+  background: var(--background-default-grey);
+  font-size: var(--da-text-xs);
+  pointer-events: none;
+}
+
+.da-map-status:empty {
+  display: none;
+}
+
+/* ------------------------------------------------------------ recherche */
+.da-search-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-title-grey);
+}
+
+.da-search .fr-input {
+  font-size: 1rem;
+}
+
+.da-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.da-filters-label {
+  font-size: var(--da-text-sm);
+  color: var(--text-mention-grey);
+}
+
+.da-filter {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border-action-high-blue-france);
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: var(--da-text-sm);
+  line-height: 1.25rem;
+  cursor: pointer;
+}
+
+.da-filter[aria-pressed='true'] {
+  background: var(--background-action-high-blue-france);
+  color: #fff;
+}
+
+.da-filter:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-status {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+.da-status-detail {
+  display: block;
+  color: var(--text-mention-grey);
+  font-size: var(--da-text-sm);
+}
+
+/* Besoins : bandeau dépliable */
+.da-needs {
+  margin: 1rem 0 0.5rem;
+}
+
+.da-needs > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--background-alt-blue-france);
+  border-left: 4px solid var(--border-active-blue-france);
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.da-needs > summary::-webkit-details-marker {
+  display: none;
+}
+
+.da-needs > summary::after {
+  content: '▾';
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.da-needs:not([open]) > summary::after {
+  transform: rotate(-90deg);
+}
+
+.da-needs > summary:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-needs-count {
+  padding: 0 0.5rem;
+  border-radius: 1rem;
+  background: var(--background-default-grey);
+  font-size: var(--da-text-xs);
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.da-needs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.da-need {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-default-grey);
+  border-radius: var(--da-radius);
+  background: var(--background-default-grey);
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.da-need small {
+  color: var(--text-mention-grey);
+  font-size: var(--da-text-xs);
+  line-height: 1.3;
+}
+
+.da-need:hover {
+  background: var(--background-alt-blue-france);
+  border-color: var(--border-active-blue-france);
+}
+
+.da-need:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+/* Résultats */
+.da-results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.da-results li {
+  padding: 0;
+  margin: 0;
+}
+
+.da-results li::before {
+  content: none;
+}
+
+.da-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 0.5rem;
+  border: 0;
+  border-bottom: 1px solid var(--border-default-grey);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.da-result:hover,
+.da-result.is-selected {
+  background: var(--background-alt-blue-france);
+}
+
+.da-result:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: -2px;
+}
+
+.da-result-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-action-high-blue-france);
+}
+
+.da-result-meta {
+  font-size: var(--da-text-sm);
+  line-height: 1.35;
+  color: var(--text-mention-grey);
+}
+
+.da-result-why {
+  font-size: var(--da-text-sm);
+  line-height: 1.35;
+  font-style: italic;
+  color: var(--text-default-info);
+}
+
+.da-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.15rem 0 0;
+}
+
+/* Recherche intelligente : une ligne discrète */
+.da-semantic {
+  margin: 1.25rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px dashed var(--border-default-grey);
+  border-radius: var(--da-radius);
+  font-size: var(--da-text-sm);
+}
+
+.da-semantic.is-on {
+  border-style: solid;
+  border-color: var(--border-default-success);
+}
+
+.da-semantic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.da-semantic-info {
+  margin: 0.4rem 0 0;
+  color: var(--text-mention-grey);
+  font-size: var(--da-text-sm);
+  line-height: 1.45;
+}
+
+.da-semantic progress {
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.da-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: var(--background-action-high-success);
+}
+
+.da-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: var(--da-text-sm);
+}
+
+.da-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-default-grey);
+  border-top-color: var(--border-active-blue-france);
+  border-radius: 50%;
+  animation: da-spin 0.8s linear infinite;
+}
+
+@keyframes da-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .da-spinner {
+    animation-duration: 3s;
+  }
+
+  .da-layout,
+  .da-needs > summary::after {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------ fiche */
+.da-dataset-card {
+  margin-top: 0.75rem;
+}
+
+.da-dataset-title {
+  margin: 0 0 0.15rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-title-grey);
+}
+
+.da-dataset-title:focus {
+  outline: none;
+}
+
+.da-dataset-meta {
+  margin: 0 0 0.35rem;
+  font-size: var(--da-text-sm);
+  color: var(--text-mention-grey);
+}
+
+.da-lead {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-default-grey);
+}
+
+.da-contact {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.75rem;
+  border-left: 4px solid var(--border-default-grey);
+  background: var(--background-alt-grey);
+  font-size: var(--da-text-sm);
+}
+
+.da-contact-title {
+  margin: 0 0 0.2rem;
+  font-size: var(--da-text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-mention-grey);
+}
+
+.da-contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.da-contact-list li {
+  padding: 0.15rem 0;
+}
+
+.da-contact-list li::before {
+  content: none;
+}
+
+.da-details {
+  margin: 0.75rem 0;
+  font-size: var(--da-text-sm);
+}
+
+.da-details > summary {
+  cursor: pointer;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.da-abstract {
+  max-height: 12rem;
+  overflow: auto;
+  font-size: var(--da-text-sm);
+}
+
+.da-facts {
+  margin: 0.5rem 0;
+}
+
+.da-fact {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+  font-size: var(--da-text-sm);
+}
+
+.da-fact dt {
+  flex: 0 0 9rem;
+  color: var(--text-mention-grey);
+}
+
+.da-fact dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ onglets */
+.da-tabs {
+  display: flex;
+  margin: 1.25rem 0 1rem;
+  border-bottom: 2px solid var(--border-default-grey);
+}
+
+.da-tab {
+  flex: 1 1 0;
+  padding: 0.7rem 0.25rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-mention-grey);
+  cursor: pointer;
+}
+
+.da-tab:hover {
+  background: var(--background-alt-blue-france);
+}
+
+.da-tab[aria-selected='true'] {
+  border-bottom-color: var(--border-active-blue-france);
+  color: var(--text-action-high-blue-france);
+}
+
+.da-tab:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: -2px;
+}
+
+.da-tabpanel:focus {
+  outline: none;
+}
+
+.da-h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.da-client {
+  margin: 0 0 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.da-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.da-help {
+  margin: 0.25rem 0 0;
+  font-size: var(--da-text-sm);
+  color: var(--text-mention-grey);
+}
+
+.da-steps-help {
+  margin: 0.5rem 0;
+  padding-left: 1.1rem;
+  font-size: var(--da-text-sm);
+}
+
+.da-big-number {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--background-alt-blue-france);
+  font-size: 1.125rem;
+}
+
+.da-table table {
+  font-size: var(--da-text-sm);
+}
+
+.da-file {
+  word-break: break-all;
+}
+
+.da-tables {
+  border: 1px solid var(--border-default-grey);
+  padding: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.da-tables-list {
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.da-access-list {
+  list-style: none;
+  padding: 0;
+  font-size: var(--da-text-sm);
+}
+
+.da-access-list li {
+  padding: 0.2rem 0;
+}
+
+.da-access-list li::before {
+  content: none;
+}
+
+.da-code {
+  overflow: auto;
+  max-height: 10rem;
+  padding: 0.5rem;
+  background: var(--background-alt-grey);
+  font-size: var(--da-text-xs);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.da-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0 0.5rem;
+}
+
+.da-nav-right {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------ zone facultative */
+.da-zonebox {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--border-default-grey);
+  border-radius: var(--da-radius);
+}
+
+.da-zonebox > h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.da-opt {
+  font-size: var(--da-text-sm);
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.da-methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.da-method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.25rem;
+  border: 1px solid var(--border-action-high-blue-france);
+  border-radius: var(--da-radius);
+  background: transparent;
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: var(--da-text-sm);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+}
+
+.da-method small {
+  font-size: var(--da-text-xs);
+  font-weight: 400;
+}
+
+.da-method:hover,
+.da-method[aria-pressed='true'] {
+  background: var(--background-alt-blue-france);
+}
+
+.da-method[aria-pressed='true'] {
+  border-width: 2px;
+}
+
+.da-method:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-place-search {
+  margin: 0.75rem 0;
+}
+
+.da-bbox-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.da-bbox-form > p,
+.da-bbox-form > button,
+.da-bbox-form > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.da-zone-summary {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-left: 4px solid var(--border-active-blue-france);
+  background: var(--background-alt-blue-france);
+}
+
+.da-zone-summary p {
+  margin: 0 0 0.35rem;
+}
+
+/* ------------------------------------------------------------ modale */
+.da-modal {
+  z-index: 2000;
+}
+
+.da-modal.da-open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.da-modal .fr-modal__body {
+  max-height: calc(100vh - 4rem);
+}
+
+/* ------------------------------------------------------------ tablette et mobile */
+@media (max-width: 62em) {
+  :root {
+    --da-panel-width: 24rem;
+  }
+}
+
+@media (max-width: 48em) {
+  .da-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+  }
+
+  .da-map-wrap {
+    order: 1;
+    flex: 0 0 40vh;
+    min-height: 15rem;
+  }
+
+  .da-panel {
+    order: 2;
+    border-right: 0;
+    overflow: visible;
+    padding: 1rem;
+  }
+
+  .da-toggle,
+  .da-tagline {
+    display: none;
+  }
+
+  .da-notice {
+    text-align: left;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .da-title {
+    font-size: 1.0625rem;
+  }
+
+  .da-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .da-method {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+  }
+
+  .da-method br {
+    display: none;
+  }
+
+  .da-fact dt {
+    flex-basis: 7rem;
+  }
+
+  .da-dataset-title {
+    font-size: 1.25rem;
+  }
+}
+
+.da-header .fr-header__brand,
+.da-header .fr-header__service {
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.da-header-tools .fr-btn {
+  white-space: nowrap;
+}
+
+.da-abstract p {
+  margin: 0 0 0.5rem;
+}
+
+.da-abstract ul {
+  margin: 0 0 0.5rem;
+  padding-left: 1.2rem;
+}

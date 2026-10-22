@@ -85,7 +85,7 @@ describe('affichage du contact', () => {
     const html = renderContacts({ ...base, contacts: [{ organisation: 'IGN', website: 'https://www.ign.fr' }] })
     expect(html).toContain('Aucune adresse courriel n’est renseignée')
     expect(html).not.toContain('mailto:')
-    expect(html).toContain('Site du producteur')
+    expect(html).toContain('>Site<')
     expect(renderContacts({ ...base, contacts: [] })).toContain('Aucun contact n’est renseigné')
   })
 

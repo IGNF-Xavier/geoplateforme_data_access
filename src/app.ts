@@ -318,7 +318,7 @@ function openAuthModal(): void {
 function onAuthChanged(): void {
   const btn = $('#da-auth-btn')
   btn.textContent = auth.authenticated ? `Connecté${auth.userLabel ? ` · ${auth.userLabel}` : ''}` : 'Se connecter'
-  btn.className = `fr-btn ${auth.authenticated ? 'fr-btn--secondary' : ''} fr-icon-account-circle-line fr-btn--icon-left`
+  btn.className = `fr-btn fr-btn--sm ${auth.authenticated ? 'fr-btn--secondary' : ''} fr-icon-account-circle-line fr-btn--icon-left`
   extraction.reset()
   store.set({ authVersion: store.get().authVersion + 1, extraction: initialExtraction })
   const { dataset, tab } = store.get()
