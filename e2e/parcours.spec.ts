@@ -123,6 +123,11 @@ test('connexion par jeton : extraction réservée, erreur du service expliquée'
   await page.getByRole('button', { name: 'Se connecter' }).first().click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toContainText('La connexion automatique n’est pas disponible')
+  // Aide : récupération du jeton depuis QGIS (plugin Géoplateforme) ou le Swagger.
+  await dialog.locator('summary', { hasText: 'Comment obtenir un jeton' }).click()
+  await expect(dialog).toContainText('plugin Géoplateforme pour QGIS')
+  await expect(dialog.getByRole('button', { name: 'Copier le script' })).toBeVisible()
+  await expect(dialog.locator('pre')).toContainText('authManager')
   await dialog.getByLabel(/Jeton d’accès/).fill('jeton-bidon-pour-test')
   await dialog.getByRole('button', { name: 'Valider' }).click()
   await dialog.getByRole('button', { name: 'Se déconnecter' }).waitFor()

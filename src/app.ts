@@ -1,5 +1,6 @@
 import { describeWmtsLayer } from './api/wmts'
 import { auth, handleRedirect, oidcConfigured, startLogin } from './auth/auth'
+import { QGIS_TOKEN_SCRIPT } from './auth/qgisTokenScript'
 import { errorMessage, isAborted } from './api/http'
 import { $, copyText, esc, saveTextFile } from './components/dom'
 import { openModal } from './components/modal'
@@ -286,12 +287,21 @@ function openAuthModal(): void {
     return `${oidcConfigured() ? `<p><button type="button" class="fr-btn" data-act="oidc-login">Se connecter avec la Géoplateforme</button></p><p class="fr-text--sm">ou collez un jeton :</p>` : `<div class="fr-callout fr-callout--sm"><p class="fr-callout__text">La connexion automatique n’est pas disponible : elle exige un client OAuth2 enregistré auprès de la Géoplateforme pour cette adresse (voir le README). Collez un jeton d’accès à la place.</p></div>`}
       <form id="da-token-form" novalidate>
         <div class="fr-input-group"><label class="fr-label" for="da-token">Jeton d’accès (Bearer)
-          <span class="fr-hint-text">Obtenu depuis le bouton « Authorize » du Swagger d’extraction (data.geopf.fr/extraction/swagger-ui). Il reste dans ce navigateur et n’est envoyé qu’à data.geopf.fr.</span></label>
+          <span class="fr-hint-text">Voir « Comment obtenir un jeton ? » ci-dessous (depuis QGIS ou le Swagger). Il reste dans ce navigateur et n’est envoyé qu’à data.geopf.fr.</span></label>
           <textarea class="fr-input" id="da-token" rows="3" autocomplete="off" spellcheck="false"></textarea></div>
         <div class="fr-checkbox-group"><input type="checkbox" id="da-token-remember"><label class="fr-label" for="da-token-remember">Le conserver pour cet onglet (sessionStorage)</label></div>
         <div id="da-token-error" aria-live="polite"></div>
         <button type="submit" class="fr-btn">Valider</button>
-      </form>`
+      </form>
+      <details class="da-details da-token-help"><summary>Comment obtenir un jeton ?</summary>
+        <p>Le jeton est <strong>temporaire</strong> (quelques dizaines de minutes à quelques heures).</p>
+        <ol>
+          <li><strong>Depuis QGIS</strong>, si vous êtes déjà connecté avec le plugin Géoplateforme pour QGIS (configuration d’authentification Géoplateforme) : ouvrez la console Python (<em>Extensions › Console Python</em>), cliquez sur « Afficher l’éditeur », collez le script ci-dessous et exécutez-le. Il affiche, pour chacune de vos configurations d’authentification, l’en-tête <code>Bearer …</code> ; copiez la valeur de votre configuration Géoplateforme (celles sans jeton affichent « pas de jeton »). Si la session a expiré, QGIS peut ouvrir une fenêtre de reconnexion : reconnectez-vous puis relancez le script.
+            <pre class="da-code" tabindex="0">${esc(QGIS_TOKEN_SCRIPT)}</pre>
+            <button type="button" class="fr-btn fr-btn--secondary fr-btn--sm" data-act="copy-script">Copier le script</button></li>
+          <li><strong>Depuis le Swagger officiel</strong> du service (<a href="https://data.geopf.fr/extraction/swagger-ui/index.html" target="_blank" rel="noopener">swagger-ui<span class="fr-sr-only"> (nouvelle fenêtre)</span></a>) : bouton <em>Authorize</em>, puis le jeton apparaît dans la commande <code>curl</code> générée par <em>Try it out</em>.</li>
+        </ol>
+      </details>`
   }
   const modal = openModal({ title: 'Connexion à la Géoplateforme', body: `<div id="da-auth-body">${render()}</div>` })
   const body = modal.querySelector<HTMLElement>('#da-auth-body')!
@@ -306,12 +316,16 @@ function openAuthModal(): void {
     }
     body.innerHTML = render()
   })
-  body.addEventListener('click', (e) => {
+  body.addEventListener('click', async (e) => {
     const act = (e.target as HTMLElement).closest<HTMLElement>('[data-act]')?.dataset.act
     if (act === 'logout') {
       auth.clear()
       body.innerHTML = render()
     } else if (act === 'oidc-login') void startLogin()
+    else if (act === 'copy-script') {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-act]')!
+      btn.textContent = (await copyText(QGIS_TOKEN_SCRIPT)) ? 'Script copié ✓' : 'Copie impossible'
+    }
   })
 }
 

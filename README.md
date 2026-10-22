@@ -137,7 +137,14 @@ Bouton « Activer la recherche intelligente » sous la barre de recherche. Un pe
 
 ## Connexion et extraction
 
-**Connexion** (bouton en en-tête) : jeton Bearer collé (à obtenir via « Authorize » du Swagger d'extraction), gardé en mémoire ou, sur demande, en `sessionStorage` ; envoyé uniquement à `data.geopf.fr`. L'identité et l'expiration sont lues dans le JWT (sans vérification de signature : le serveur reste juge).
+**Connexion** (bouton en en-tête) : jeton Bearer collé (voir ci-dessous), gardé en mémoire ou, sur demande, en `sessionStorage` ; envoyé uniquement à `data.geopf.fr`. L'identité et l'expiration sont lues dans le JWT (sans vérification de signature : le serveur reste juge).
+
+**Obtenir un jeton** (aide aussi disponible dans la fenêtre de connexion) :
+
+- *Depuis QGIS*, si vous êtes déjà connecté avec le plugin **Géoplateforme pour QGIS** (configuration d'authentification Géoplateforme) : ouvrir la console Python (*Extensions › Console Python*), afficher l'éditeur, coller le script [`src/auth/qgisTokenScript.ts`](src/auth/qgisTokenScript.ts) (le bouton « Copier le script » de la fenêtre de connexion le fournit) et l'exécuter. Il demande à QGIS l'en-tête d'authentification de chaque configuration, **sans émettre la requête** (l'en-tête est lu localement), et affiche `Bearer …` ; copier la valeur de la configuration Géoplateforme. Si la session a expiré, QGIS peut proposer de se reconnecter : relancer le script ensuite.
+- *Depuis le Swagger* d'extraction (<https://data.geopf.fr/extraction/swagger-ui/index.html>) : bouton *Authorize*, puis le jeton apparaît dans la commande `curl` générée par *Try it out*.
+
+Le jeton est temporaire (quelques dizaines de minutes à quelques heures) ; ne le partagez pas et ne le versionnez pas.
 
 **OAuth2 PKCE** : implémenté et testé (vecteur de la RFC 7636) mais **inactif**, car les clients publics existants (`cartes-gouv-public`, `gpf-swagger`) refusent une redirection vers une autre origine (HTTP 400 vérifié). Pour l'activer : faire enregistrer un client public OAuth2 avec l'URL de l'application comme URI de redirection, puis définir `VITE_OIDC_CLIENT_ID` à la construction.
 
