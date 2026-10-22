@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr" data-fr-scheme="light" data-fr-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000091" />
+    <title>Accès aux données géographiques – Géoplateforme (expérimental)</title>
+    <meta name="description" content="Recherchez, visualisez et téléchargez des données géographiques françaises de la Géoplateforme, ou utilisez-les dans QGIS." />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <a class="fr-skiplink" href="#da-step-content">Aller au contenu</a>
+    <div class="fr-notice fr-notice--info da-notice" role="note">
+      <div class="fr-container fr-container--fluid">
+        <div class="fr-notice__body">
+          <p><span class="fr-notice__title">Application expérimentale et non officielle.</span>
+            <span class="fr-notice__desc">Projet personnel, indépendant de l’IGN, construit sur les services publics de la Géoplateforme. Aucune garantie de disponibilité ni d’exactitude.</span></p>
+        </div>
+      </div>
+    </div>
+    <header role="banner" class="fr-header da-header">
+      <div class="fr-header__body">
+        <div class="fr-container fr-container--fluid da-header-row">
+          <div class="fr-header__brand">
+            <div class="fr-header__service">
+              <p class="fr-header__service-title">Accès aux données géographiques</p>
+              <p class="fr-header__service-tagline">Décrivez ce que vous cherchez, visualisez-le, puis utilisez-le dans votre SIG ou téléchargez-le</p>
+            </div>
+          </div>
+          <div class="da-header-tools">
+            <button type="button" id="da-auth-btn" class="fr-btn fr-icon-account-circle-line fr-btn--icon-left">Se connecter</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="da-layout">
+      <aside id="da-panel" class="da-panel" aria-label="Recherche et sélection">
+        <main id="da-step-content" class="da-step-content" tabindex="-1"></main>
+      </aside>
+
+      <section class="da-map-wrap" aria-label="Carte">
+        <div id="da-map" class="da-map" role="application" aria-label="Carte interactive. Les mêmes actions sont disponibles dans le panneau latéral."></div>
+        <button type="button" class="fr-btn fr-btn--secondary fr-btn--sm da-toggle" data-act="toggle-panel" aria-controls="da-panel">Agrandir / réduire la carte</button>
+        <p id="da-map-status" class="da-map-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <div id="da-modal-root"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

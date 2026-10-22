@@ -1,0 +1,797 @@
+:root {
+  --da-panel-width: 28rem;
+  --da-header-height: 5.5rem;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------ en-tête */
+.da-header .fr-header__body {
+  box-shadow: none;
+}
+
+.da-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 1rem;
+}
+
+.da-header .fr-header__brand {
+  flex: 1 1 auto;
+  padding: 0;
+}
+
+/* ------------------------------------------------------------ disposition */
+.da-layout {
+  display: grid;
+  grid-template-columns: var(--da-panel-width) minmax(0, 1fr);
+  flex: 1 1 0;
+  min-height: 0;
+  transition: grid-template-columns 0.2s ease;
+}
+
+.da-panel-collapsed .da-layout {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.da-panel-collapsed .da-panel {
+  visibility: hidden;
+  padding: 0;
+  border: 0;
+}
+
+.da-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.75rem 1rem 1.5rem;
+  border-right: 1px solid var(--border-default-grey);
+  background: var(--background-default-grey);
+}
+
+.da-map-wrap {
+  position: relative;
+  min-height: 20rem;
+}
+
+.da-map {
+  position: absolute;
+  inset: 0;
+}
+
+.da-toggle {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 2.2rem;
+  z-index: 5;
+}
+
+.da-map-status {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.4rem;
+  z-index: 5;
+  margin: 0;
+  padding: 0.15rem 0.5rem;
+  background: var(--background-default-grey);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.da-map-status:empty {
+  display: none;
+}
+
+/* ------------------------------------------------------------ étapes */
+.da-steps {
+  display: flex;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.da-steps li {
+  display: block;
+  list-style: none;
+  flex: 1 1 0;
+  padding: 0;
+  margin: 0;
+}
+
+.da-steps li::before {
+  content: none;
+}
+
+.da-step-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.5rem 0.25rem;
+  border: 0;
+  border-bottom: 3px solid var(--border-default-grey);
+  background: transparent;
+  color: var(--text-mention-grey);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.da-step-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.da-step-btn.is-current {
+  border-bottom-color: var(--border-active-blue-france);
+  color: var(--text-action-high-blue-france);
+}
+
+.da-step-btn:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--background-contrast-grey);
+  color: var(--text-default-grey);
+  font-size: 0.8rem;
+}
+
+.is-current .da-step-n,
+.is-done .da-step-n {
+  background: var(--background-action-high-blue-france);
+  color: #fff;
+}
+
+.da-context {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.da-context:empty {
+  display: none;
+}
+
+.da-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+  border-radius: 1rem;
+  background: var(--background-alt-blue-france);
+  font-size: 0.85rem;
+}
+
+.da-chip-label {
+  color: var(--text-mention-grey);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.da-chip-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.da-chip-x {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.da-chip-x:hover {
+  background: var(--background-contrast-grey);
+}
+
+.da-step-content:focus {
+  outline: none;
+}
+
+.da-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0 0.5rem;
+}
+
+/* ------------------------------------------------------------ recherche */
+.da-search .fr-search-bar {
+  margin-top: 0.25rem;
+}
+
+.da-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.25rem;
+}
+
+.da-filter {
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border-action-high-blue-france);
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.da-filter[aria-pressed='true'] {
+  background: var(--background-action-high-blue-france);
+  color: #fff;
+}
+
+.da-filter:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.da-results li {
+  padding: 0;
+  margin: 0;
+}
+
+.da-results li::before {
+  content: none;
+}
+
+.da-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--border-default-grey);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.da-result:hover,
+.da-result.is-selected {
+  background: var(--background-alt-blue-france);
+}
+
+.da-result:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: -2px;
+}
+
+.da-result-title {
+  font-weight: 700;
+  color: var(--text-action-high-blue-france);
+}
+
+.da-result-meta {
+  font-size: 0.8rem;
+  color: var(--text-mention-grey);
+}
+
+.da-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.25rem 0;
+}
+
+.da-facts {
+  margin: 0.5rem 0;
+}
+
+.da-fact {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.1rem 0;
+}
+
+.da-fact dt {
+  flex: 0 0 8.5rem;
+  color: var(--text-mention-grey);
+}
+
+.da-fact dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.da-details {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.da-details > summary {
+  cursor: pointer;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+}
+
+.da-abstract {
+  max-height: 10rem;
+  overflow: auto;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------------ zone */
+.da-methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.da-method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.25rem;
+  border: 1px solid var(--border-action-high-blue-france);
+  background: transparent;
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.da-method small {
+  font-weight: 400;
+}
+
+.da-method:hover,
+.da-method[aria-pressed='true'] {
+  background: var(--background-alt-blue-france);
+}
+
+.da-method[aria-pressed='true'] {
+  border-width: 2px;
+}
+
+.da-method:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-place-search {
+  margin: 0.75rem 0;
+}
+
+.da-bbox-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.da-bbox-form > p,
+.da-bbox-form > button,
+.da-bbox-form > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.da-zone-summary {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-left: 4px solid var(--border-active-blue-france);
+  background: var(--background-alt-blue-france);
+}
+
+.da-zone-summary p {
+  margin: 0 0 0.35rem;
+}
+
+/* ------------------------------------------------------------ récupérer */
+.da-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-default-grey);
+  margin-bottom: 0.75rem;
+}
+
+.da-tab {
+  flex: 1 1 0;
+  padding: 0.5rem 0.25rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-mention-grey);
+  cursor: pointer;
+}
+
+.da-tab[aria-selected='true'] {
+  border-bottom-color: var(--border-active-blue-france);
+  color: var(--text-action-high-blue-france);
+}
+
+.da-tab:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: -2px;
+}
+
+.da-tabpanel:focus {
+  outline: none;
+}
+
+.da-big-number {
+  margin: 0.5rem 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--background-alt-blue-france);
+  font-size: 1.05rem;
+}
+
+.da-table table {
+  font-size: 0.8rem;
+}
+
+.da-file {
+  word-break: break-all;
+}
+
+.da-tables {
+  border: 1px solid var(--border-default-grey);
+  padding: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.da-tables-list {
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.da-access-list {
+  list-style: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.da-access-list li {
+  padding: 0.15rem 0;
+}
+
+.da-access-list li::before {
+  content: none;
+}
+
+.da-actions-list {
+  list-style: none;
+  padding: 0;
+}
+
+.da-actions-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: flex-start;
+  padding: 0.35rem 0;
+}
+
+.da-actions-list li::before {
+  content: none;
+}
+
+.da-code {
+  overflow: auto;
+  max-height: 10rem;
+  padding: 0.5rem;
+  background: var(--background-alt-grey);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.da-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.da-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-default-grey);
+  border-top-color: var(--border-active-blue-france);
+  border-radius: 50%;
+  animation: da-spin 0.8s linear infinite;
+}
+
+@keyframes da-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .da-spinner {
+    animation-duration: 3s;
+  }
+
+  .da-layout {
+    transition: none;
+  }
+}
+
+/* La modale est pilotée par l'application (le script DSFR retire `fr-modal--opened`). */
+.da-modal {
+  z-index: 2000;
+}
+
+.da-modal.da-open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.da-modal .fr-modal__body {
+  max-height: calc(100vh - 4rem);
+}
+
+/* ------------------------------------------------------------ tablette et mobile */
+@media (max-width: 62em) {
+  :root {
+    --da-panel-width: 23rem;
+  }
+}
+
+@media (max-width: 48em) {
+  .da-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+  }
+
+  .da-map-wrap {
+    order: 1;
+    flex: 0 0 42vh;
+    min-height: 15rem;
+  }
+
+  .da-panel {
+    order: 2;
+    border-right: 0;
+    overflow: visible;
+  }
+
+  .da-toggle {
+    display: none;
+  }
+
+  .da-header .fr-header__service-tagline {
+    display: none;
+  }
+
+  .da-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .da-method {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+  }
+
+  .da-method br {
+    display: none;
+  }
+
+  .da-fact dt {
+    flex-basis: 7rem;
+  }
+}
+
+.da-nav-right {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------ recherche par besoin */
+.da-needs {
+  margin: 0.75rem 0;
+}
+
+.da-needs > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--background-alt-blue-france);
+  border-left: 4px solid var(--border-active-blue-france);
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.da-needs > summary:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-needs-count {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.da-needs[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
+.da-needs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+  gap: 0.4rem;
+}
+
+.da-need {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-default-grey);
+  background: var(--background-default-grey);
+  color: var(--text-action-high-blue-france);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.da-need small {
+  color: var(--text-mention-grey);
+  font-size: 0.72rem;
+}
+
+.da-need:hover {
+  background: var(--background-alt-blue-france);
+  border-color: var(--border-active-blue-france);
+}
+
+.da-need:focus-visible {
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
+}
+
+.da-understood {
+  margin: 0.5rem 0 0.25rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid var(--border-active-blue-france);
+  background: var(--background-alt-blue-france);
+  font-size: 0.85rem;
+}
+
+.da-result-why {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-default-info);
+}
+
+/* ------------------------------------------------------------ zone facultative */
+.da-dataset-card {
+  margin-top: 0.5rem;
+}
+
+.da-zonebox {
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--border-default-grey);
+}
+
+.da-zonebox > h3 {
+  margin-bottom: 0.25rem;
+}
+
+.da-opt {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.da-lead {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-mention-grey);
+}
+
+.da-semantic {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px dashed var(--border-default-grey);
+}
+
+.da-semantic.is-on {
+  border-style: solid;
+  border-color: var(--border-default-success);
+}
+
+.da-semantic p {
+  margin: 0 0 0.35rem;
+}
+
+.da-semantic progress {
+  width: 100%;
+}
+
+.da-contact {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid var(--border-default-grey);
+  background: var(--background-alt-grey);
+  font-size: 0.85rem;
+}
+
+.da-contact h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.da-contact-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.da-contact-list li {
+  padding: 0.2rem 0;
+}
+
+.da-contact-list li::before {
+  content: none;
+}

@@ -1,0 +1,52 @@
+{
+  "name": "geoplateforme-data-access",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Expérimental et non officiel : rechercher, visualiser, télécharger ou utiliser dans un SIG les données de la Géoplateforme",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:live": "cross-env LIVE=1 vitest run tests/thesaurus.live.test.ts",
+    "test:semantic": "cross-env LIVE=1 vitest run tests/semantic.live.test.ts",
+    "build:semantic": "node scripts/build-semantic-index.mjs",
+    "download:model": "bash scripts/download-model.sh"
+  },
+  "dependencies": {
+    "@gouvfr/dsfr": "^1.14.4",
+    "@huggingface/transformers": "^4.3.1",
+    "@turf/area": "^7.4.0",
+    "@turf/bbox": "^7.4.0",
+    "@turf/boolean-intersects": "^7.4.0",
+    "@turf/buffer": "^7.4.0",
+    "@turf/helpers": "^7.4.0",
+    "@turf/intersect": "^7.4.0",
+    "@turf/simplify": "^7.4.0",
+    "geopf-extensions-openlayers": "^1.0.0-beta.16",
+    "geoportal-access-lib": "^3.4.7",
+    "ol": "^10.11.0",
+    "proj4": "^2.22.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/geojson": "^7946.0.16",
+    "cross-env": "^10.1.0",
+    "happy-dom": "^21.0.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5",
+    "vitest": "^4.1.12"
+  },
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IGNF-Xavier/geoplateforme_data_access.git"
+  },
+  "homepage": "https://ignf-xavier.github.io/geoplateforme_data_access/",
+  "bugs": {
+    "url": "https://github.com/IGNF-Xavier/geoplateforme_data_access/issues"
+  }
+}
